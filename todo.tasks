@@ -1,0 +1,6 @@
+add helpers for updating state maybe-like 
+makeStore(..., {
+    ':ns/thing', ('update', 'prop', state, action) => 'new-val'
+})
+
+fix tests to not depend upon immer behavior.
