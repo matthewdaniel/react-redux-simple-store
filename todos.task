@@ -4,3 +4,5 @@ makeStore(..., {
 })
 
 fix tests to not depend upon immer behavior.
+☐ try to get root state to type out
+☐ make makeStore name the functions for better stack trace? particularly the reducers. 

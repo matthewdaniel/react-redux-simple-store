@@ -1,8 +1,8 @@
-import { useSelector } from 'react-redux';
+import { useSelector, batch } from 'react-redux';
 import thunk from 'redux-thunk';
 import { applyMiddleware, combineReducers, createStore as reactCreateStore } from 'redux';
-import { IActionMap, ActionDispatchFunction, afn, isThunk, isHandler, Store, typeHelper, AnyStore } from './index.types';
-import { throttleThunk } from './throttleThunk';
+import { IActionMap, ActionDispatchFunction, afn, isThunk, isBatch, isHandler, Store, MaxStores, tHelper } from './index.types';
+import { throttleThunk } from './middleware/throttleThunk';
 import { composeWithDevTools } from 'redux-devtools-extension';
 const { entries } = Object;
 
@@ -13,20 +13,14 @@ const combineStores = (stores: Store<any, any, any, any>[]) => combineReducers(s
     [n.path]: n.reducer
 }), {}));
 
-let store;
-export const createGlobalStore = <S extends [any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, any?, ...any]>(stores: S, extraMiddleware: Parameters<typeof applyMiddleware> = [], dev?: boolean) => {
-    const reactStore = reactCreateStore(
+let realStore: any;
+export const createGlobalStore = <S extends MaxStores>(stores: S, extraMiddleware: Parameters<typeof applyMiddleware> = [], dev?: boolean): ReturnType<typeof reactCreateStore> & { getStore: tHelper<S> } => {
+    return realStore = reactCreateStore(
         combineStores(stores),
         dev
             ? composeWithDevTools(applyMiddleware(...thunkMiddleware.concat(extraMiddleware)))
             : applyMiddleware(...thunkMiddleware.concat(extraMiddleware))
-    );
-    
-    const typeHelp = typeHelper(stores);
-    return store = {
-        ...reactStore,
-        getState: reactStore.getState as () => typeof typeHelp
-    }
+    ) as any;
 }
 
 /**
@@ -35,15 +29,16 @@ export const createGlobalStore = <S extends [any?, any?, any?, any?, any?, any?,
  * @param initialState
  * @param actionMap
  */
-export const makeStore = <S, T extends IActionMap<S>, T2 extends string>(path: T2, initialState: S, actionMap: T, useConventions: boolean = true): Store<ActionDispatchFunction<S, T>, afn<S, T>, S, T2> => {
-    if (useConventions) entries(actionMap).forEach(([k, action]) => {
+export const makeStore = <S, T extends IActionMap<S, T>, T2 extends string>(path: T2, initialState: S, actionMap: T, useConventions: boolean = true): Store<ActionDispatchFunction<S, T>, afn<S, T>, S, T2> => {
+    if (useConventions) entries(actionMap).forEach(([k, action]: any) => {
         ensureNamespaced(k);
         if (isThunk(action)) ensureThunkNameConvention(k);
+        if (isBatch(action)) ensureFxNameConvention(k);
     });
     
     const store: Store<ActionDispatchFunction<S, T>, afn<S, T>, S, T2> = ({
         path,
-        action: (action: keyof T, ...payload: any[]) => {
+        dispatch: (action: keyof T, ...payload: any[]) => {
             const a = actionMap[action];
             if (isThunk(a)) return (dispatch: any, getState: any) => {
                 const root = getState();
@@ -54,28 +49,55 @@ export const makeStore = <S, T extends IActionMap<S>, T2 extends string>(path: T
                 });
             }
     
-            if (isHandler(a)) return ({ payload, type: action });    
+            if (isBatch(a)) {
+                const work = [];
+                const queuedDispatch = (...params: any[]) => work.push(params);
+                batch(() => {
+                    realStore.dispatch({ payload, type: action })
+
+                })
+                
+            }
+
+            if (isHandler(a)) return realStore.dispatch({ payload, type: action });
     
             throw new Error('unimplemented handler type');
         },
-        dispatch: (...rest: any[]) => () => (store as any).dispatch(
-            (store.action as any)(...rest)
-        ),
-        reducer: (state = initialState, action) => isHandler(actionMap[action.type])
-            ? (actionMap[action.type] as any)(state, action.payload)
-            : state,
-        useSelector: () => useSelector(store => [].concat(path as any)
+        dispatcher: (action: keyof T) => (...payload: any[]) => store.dispatch(action, ...(payload as any)),
+        reducer: (state = initialState, action) => {
+            if(!isHandler(actionMap[action.type])) return state;
+
+            const nextState = (actionMap[action.type] as any)(state, action.payload);
+
+            return nextState;
+        },
+        useSelector: () => useSelector((store: any) => [].concat(path as any)
             .reduce((c, n) => c?.[n], store as any))
     });
 
     return store;
 };
 
+interface SomeState {
+    red: 'blue',
+    blue: 'green'
+}
+const t = makeStore('test', {} as SomeState, {
+    ':test/->thunk-action': { 'thunk': (dispatch, state, [thing]: [thing: number]) => state },
+    ':test/-|some-action': { 'batch': (state, [thing]: [thing: number]) => ({
+        db: state,
+        dispatch: [[':test/->thunk-action']]
+    }) },
+})
+
 // require namespaced (:string/)
 const ensureNamespaced = (k: string) => {
-    if (!k.match(/:[\w]*\//)) throw new Error(`Action ${k} must have a namespace. ie :todos/${k}`)
+    if (!k.match(/:[\w\-]*\//)) throw new Error(`Action ${k} must have a namespace. ie :todos/${k}`)
 };
 
 const ensureThunkNameConvention = (k: string) => {
     if (!k.includes('/->')) throw new Error(`Thunk with key ${k} should have arrow convention ie :todos/->save-todo`)
+}
+const ensureFxNameConvention = (k: string) => {
+    if (!k.includes('/-<')) throw new Error(`Thunk with key ${k} should have arrow convention ie :todos/->save-todo`)
 }

@@ -1,11 +1,15 @@
 {
-  "name": "redux-simple-store",
-  "version": "1.0.0",
-  "main": "index.js",
-  "author": "Matt Meisberger <matt.meisberger@rate.com>",
+  "name": "react-redux-simple-store",
+  "version": "0.0.1",
+  "main": "dist/index.js",
+  "author": "Matt Meisberger <matthewdaniel@pm.me>",
   "license": "MIT",
+  "types": "./dist/index.d.ts",
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "compile": "tsc",
+    "compile:w": "tsc -w",
+    "deploy": "npm run compile && ..."
   },
   "dependencies": {
     "@types/jest": "^27.0.2",
@@ -14,10 +18,6 @@
     "@types/redux-devtools-extension": "^2.13.2",
     "@types/redux-thunk": "^2.1.0",
     "jest": "^27.2.5",
-    "react-redux": "^7.2.5",
-    "redux": "^4.1.1",
-    "redux-devtools-extension": "^2.13.9",
-    "redux-thunk": "^2.3.0",
     "ts-jest": "^27.0.5",
     "typescript": "^4.4.4"
   },
@@ -26,5 +26,11 @@
     "ramda": "^0.27.1",
     "react": "^17.0.2",
     "react-dom": "^17.0.2"
+  },
+  "peerDependencies": {
+    "react-redux": "^7.2.5",
+    "redux": "^4.1.1",
+    "redux-devtools-extension": "^2.13.9",
+    "redux-thunk": "^2.3.0"
   }
 }
