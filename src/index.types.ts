@@ -7,7 +7,7 @@
 
 type pop<T extends any[]> = T extends [...any, infer LAST] ? LAST : never;
 
-type handler<S> = (state: S, payload: any) => S;
+type handler<S> = (state: S, payload: any) => S|void;
 export const isHandler = (test: any): test is handler<any> => !!test && !isThunk(test) && typeof test === 'function';
 
 type thunkHandler<S> = { thunk: (getState: () => S, payload: any) => any }
@@ -24,13 +24,46 @@ export type Payload<S, T extends handler<S>|thunkHandler<S>> = T extends handler
         ? pop<Parameters<T['thunk']>>
         : never;
 
+type Minus<n extends number> = n extends 10 ? 9 
+: n extends 9 ? 8
+: n extends 8 ? 7
+: n extends 7 ? 6
+: n extends 6 ? 5
+: n extends 5 ? 4
+: n extends 4 ? 3
+: n extends 3 ? 2
+: n extends 2 ? 1
+: 0;
+
+export type DropFirst<T extends unknown[], n extends number> = T extends [] ? [] :
+    T extends [infer F, ...infer R]
+        ? n extends 1
+            ? R
+            : DropFirst<R, Minus<n>>
+        : T;
+// type testing = DropFirst<[1, 2, 3, 4], 2>
+
+export type Split<T extends unknown[]> = [T[0]]
+|[T[0], T[1]]
+|[T[0], T[1], T[2]]
+|[T[0], T[1], T[2], T[3]]
+|[T[0], T[1], T[2], T[3], T[4]]
+|[T[0], T[1], T[2], T[3], T[4], T[5]]
+|[T[0], T[1], T[2], T[3], T[4], T[5], T[6]]
+|[T[0], T[1], T[2], T[3], T[4], T[5], T[6], T[7]]
+|[T[0], T[1], T[2], T[3], T[4], T[5], T[6], T[7], T[8]]
+|[T[0], T[1], T[2], T[3], T[4], T[5], T[6], T[7], T[8], T[9]]
+|[T[0], T[1], T[2], T[3], T[4], T[5], T[6], T[7], T[8], T[9], T[10]]
+
+
 /**
  * This is all to extract a full store from an array of store slices
  */
-type h = {path: string, reducer: (...p: any) => any }
-type TO<S extends h> = Record<S['path'], ReturnType<S['reducer']>>
-export type MaxStores = [h?, h?, h?, h?, h?, h?, h?, h?, h?, h?, h?, h?, h?, h?, h?, h?, h?, h?, h?, ...any];
-export type tHelper<T extends MaxStores> = T extends []
+type h = { stateHelper: any }
+// type TO<S extends h> = Record<S['path'], ReturnType<S['reducer']>>
+type TO<S extends h> = S['stateHelper']
+export type MaxStores<T extends h> = [T?, T?, T?, T?, T?, T?, T?, T?, T?, T?, T?, T?, T?, T?, T?, T?, T?, T?, T?, ...any];
+export type tHelper<T extends MaxStores<any>> = T extends []
 ? {}
 : T extends [h]
 ? TO<T[0]>
