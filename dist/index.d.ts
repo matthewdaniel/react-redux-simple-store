@@ -1,5 +1,6 @@
+declare module 'react';
 import { applyMiddleware, createStore as reactCreateStore } from 'redux';
-import { IActionMap, tHelper, Payload, DropFirst, Split } from './index.types';
+import { IActionMap, tHelper, DropFirst, Payload, Split } from './index.types';
 declare type AnyStore = Store<any, any, any>;
 export declare const createGlobalStore: <S extends [(AnyStore | undefined)?, (AnyStore | undefined)?, (AnyStore | undefined)?, (AnyStore | undefined)?, (AnyStore | undefined)?, (AnyStore | undefined)?, (AnyStore | undefined)?, (AnyStore | undefined)?, (AnyStore | undefined)?, (AnyStore | undefined)?, (AnyStore | undefined)?, (AnyStore | undefined)?, (AnyStore | undefined)?, (AnyStore | undefined)?, (AnyStore | undefined)?, (AnyStore | undefined)?, (AnyStore | undefined)?, (AnyStore | undefined)?, (AnyStore | undefined)?, ...any[]]>(stores: S, extraMiddleware?: Parameters<typeof applyMiddleware>, devTools?: boolean | undefined) => import("redux").Store<unknown, import("redux").Action<any>> & {
     getStore: tHelper<S>;

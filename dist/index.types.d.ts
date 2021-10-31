@@ -7,11 +7,11 @@ declare type pop<T extends any[]> = T extends [...any, infer LAST] ? LAST : neve
 declare type handler<S> = (state: S, payload: any) => S | void;
 export declare const isHandler: (test: any) => test is handler<any>;
 declare type thunkHandler<S> = {
-    thunk: (getState: () => S, payload: any) => any;
+    thunk: (getState: () => S, payload?: any) => any;
 };
 export declare const isThunk: (test: any) => test is thunkHandler<any>;
 export declare type IActionMap<S> = Record<string, handler<S> | thunkHandler<S>>;
-export declare type Payload<S, T extends handler<S> | thunkHandler<S>> = T extends handler<S> ? Parameters<T> extends [any] ? [] : pop<Parameters<T>> : T extends thunkHandler<S> ? pop<Parameters<T['thunk']>> : never;
+export declare type Payload<S, T extends handler<S> | thunkHandler<S>> = T extends handler<S> ? Parameters<T> extends [any] ? [] : pop<Parameters<T>> : T extends thunkHandler<S> ? Parameters<T['thunk']> extends [any] ? [] : pop<Parameters<T['thunk']>> : never;
 declare type Minus<n extends number> = n extends 10 ? 9 : n extends 9 ? 8 : n extends 8 ? 7 : n extends 7 ? 6 : n extends 6 ? 5 : n extends 5 ? 4 : n extends 4 ? 3 : n extends 3 ? 2 : n extends 2 ? 1 : 0;
 export declare type DropFirst<T extends unknown[], n extends number> = T extends [] ? [] : T extends [infer F, ...infer R] ? n extends 1 ? R : DropFirst<R, Minus<n>> : T;
 export declare type Split<T extends unknown[]> = [T[0]] | [T[0], T[1]] | [T[0], T[1], T[2]] | [T[0], T[1], T[2], T[3]] | [T[0], T[1], T[2], T[3], T[4]] | [T[0], T[1], T[2], T[3], T[4], T[5]] | [T[0], T[1], T[2], T[3], T[4], T[5], T[6]] | [T[0], T[1], T[2], T[3], T[4], T[5], T[6], T[7]] | [T[0], T[1], T[2], T[3], T[4], T[5], T[6], T[7], T[8]] | [T[0], T[1], T[2], T[3], T[4], T[5], T[6], T[7], T[8], T[9]] | [T[0], T[1], T[2], T[3], T[4], T[5], T[6], T[7], T[8], T[9], T[10]];

@@ -6,3 +6,10 @@ makeStore(..., {
 fix tests to not depend upon immer behavior.
 ☐ try to get root state to type out
 ☐ make makeStore name the functions for better stack trace? particularly the reducers. 
+
+provide some convention for naming base verse derived
+make the base one bark if you sub to signals
+
+prevent duplicate keys between subs
+add recursion detection
+add 'looks like' warning (if the user keeps returning the same data just mapped so it is the same but different ref)
