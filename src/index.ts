@@ -1,8 +1,10 @@
+declare module 'react';
 import { useSelector } from 'react-redux';
 import thunk from 'redux-thunk';
 import { applyMiddleware, combineReducers, createStore as reactCreateStore } from 'redux';
-import { IActionMap,isThunk, isHandler, MaxStores, tHelper, Payload, DropFirst, Split } from './index.types';
+import { IActionMap,isThunk, isHandler, MaxStores, tHelper, DropFirst, Payload, Split } from './index.types';
 import { composeWithDevTools } from 'redux-devtools-extension';
+
 const { entries } = Object;
 
 type AnyStore = Store<any, any, any>
@@ -71,13 +73,13 @@ export class Store<S, AM1 extends IActionMap<S>, T2 extends string> {
     dispatch = <ACTION extends keyof AM1>(action: ACTION, ...payload: Payload<S, AM1[ACTION]>) => {
         const handler = this.actionMap[action];
 
-        if (isThunk(handler)) return (_: any, getState: any) => {
+        if (isThunk(handler)) return this.realStore.dispatch((_: any, getState: any) => {
             const getStateSlice = () => getState()[this.path];
             // const state = root[this.path];
             return handler.thunk(getStateSlice, payload).catch((e: any) => {
                 console.error('!!!swallowed thunk error', e);
             })
-        }
+        })
 
         if (isHandler(handler)) {
             const res = this.realStore.dispatch({ payload, type: action });
@@ -126,18 +128,18 @@ export class Store<S, AM1 extends IActionMap<S>, T2 extends string> {
     useSelector = () => useSelector((store: any) => store[this.path] as S)
 }
 
-interface SomeState {
-    red: 'blue',
-    blue: 'green'
-}
-const t = new Store('test', {} as SomeState, {
-    ':test/->thunk-action': { thunk: async (getState, [thing]: [thing: number, other: string, another: 'blue']) => {
+// interface SomeState {
+//     red: 'blue',
+//     blue: 'green'
+// }
+// const t = new Store('test', {} as SomeState, {
+//     ':test/->thunk-action': { thunk: async (getState, [thing]: [thing: number, other: string, another: 'blue']) => {
         
-    } },
-    ':test/some-action': (state, [evt]: [evt: 'red', more: 'blue']) => state
-})
+//     } },
+//     ':test/some-action': (state, [evt]: [evt: 'red', more: 'blue']) => state
+// })
 
 // const fn = t.dispatcher(':test/->thunk-action', 1)
 // const fn2 = t.dispatcher(':test/some-action', 'red')
 
-const store = createGlobalStore([t])
+// const store = createGlobalStore([t])

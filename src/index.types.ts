@@ -10,18 +10,20 @@ type pop<T extends any[]> = T extends [...any, infer LAST] ? LAST : never;
 type handler<S> = (state: S, payload: any) => S|void;
 export const isHandler = (test: any): test is handler<any> => !!test && !isThunk(test) && typeof test === 'function';
 
-type thunkHandler<S> = { thunk: (getState: () => S, payload: any) => any }
+type thunkHandler<S> = { thunk: (getState: () => S, payload?: any) => any }
 export const isThunk = (test: any): test is thunkHandler<any> => 'thunk' in test;
 
 export type IActionMap<S> = Record<string, handler<S>|thunkHandler<S>>
 
-// determin the payload (last prop of handler)
+// determine the payload (last prop of handler)
 export type Payload<S, T extends handler<S>|thunkHandler<S>> = T extends handler<S>
     ? Parameters<T> extends [any]
         ? []
         : pop<Parameters<T>>
     : T extends thunkHandler<S>
-        ? pop<Parameters<T['thunk']>>
+        ? Parameters<T['thunk']> extends [any]
+            ? []
+            : pop<Parameters<T['thunk']>>
         : never;
 
 type Minus<n extends number> = n extends 10 ? 9 
