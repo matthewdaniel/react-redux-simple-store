@@ -1,8 +1,13 @@
 {
   "name": "react-redux-simple-store",
-  "version": "0.0.5",
+  "version": "0.0.7",
   "main": "dist/index.js",
   "author": "Matt Meisberger <matthewdaniel@pm.me>",
+  "keywords": ["react", "redux", "thunk"],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/matthewdaniel/react-redux-simple-store"
+  },
   "license": "MIT",
   "types": "./dist/index.d.ts",
   "scripts": {

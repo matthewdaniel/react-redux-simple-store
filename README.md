@@ -126,12 +126,16 @@ export const multiDispatcher = s.multiDispatch;
 
 ### making an action map
 action maps consist of the action name and a handler. The params you want to pass must be registered in an array. (note dispatch will be passed them spread)
-It highly advised to use named params in typing your array
+It highly advised to use named params in typing your array. typescript ide helpers will be clearer.
 ```typescript
-// do this
-(state, [n]: [n: number]) =>
-// not this
-(state, [n]: [number]) =>
+const s = new Store(globalStoreProp, initState, 
+// action map
+{
+    // do this
+    (state, [idx]: [idx: number]) =>
+    // not this
+    (state, [idx]: [number]) =>
+});
 ```
 
 
