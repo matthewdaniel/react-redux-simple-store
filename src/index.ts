@@ -49,6 +49,7 @@ export class Store<S, AM1 extends IActionMap<S>, T2 extends string> {
     }
     private queuedWork: any[] = [];
     
+    // internal use only
     private realStore: any;
     registerRealStore = (realStore: any) => this.realStore = realStore;
 
@@ -125,21 +126,7 @@ export class Store<S, AM1 extends IActionMap<S>, T2 extends string> {
         ? state
         : (this.actionMap[action.type] as any)(state, action.payload) ?? state
 
-    useSelector = () => useSelector((store: any) => store[this.path] as S)
+    useSelector: typeof useSelector = (selector, equality) => {
+        return useSelector(state => selector((state as any)[this.path] as any), equality)
+    }
 }
-
-// interface SomeState {
-//     red: 'blue',
-//     blue: 'green'
-// }
-// const t = new Store('test', {} as SomeState, {
-//     ':test/->thunk-action': { thunk: async (getState, [thing]: [thing: number, other: string, another: 'blue']) => {
-        
-//     } },
-//     ':test/some-action': (state, [evt]: [evt: 'red', more: 'blue']) => state
-// })
-
-// const fn = t.dispatcher(':test/->thunk-action', 1)
-// const fn2 = t.dispatcher(':test/some-action', 'red')
-
-// const store = createGlobalStore([t])
